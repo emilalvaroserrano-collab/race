@@ -53,6 +53,7 @@ export class LoginScreen implements Screen {
       this.game.state.loadWallet();
       this.game.state.newRace();
       this.game.net.auth(u.phone);
+      this.game.net.onBalanceChange = (bal) => { this.game.state.money = bal; };
       this.game.show(new MenuScreen(this.game));
     } finally {
       if (btn) btn.textContent = "ENTER PADDOCK";

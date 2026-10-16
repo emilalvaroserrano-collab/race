@@ -46,7 +46,7 @@ export class GameState {
   /** Pull the wallet balance of the logged-in user into this session. */
   loadWallet(): void {
     const u = this.phone ? Auth.getUser(this.phone) : undefined;
-    this._money = u ? u.balance : START_MONEY;
+    this._money = u ? u.balance : 0;
   }
 
   get chipValue(): number {

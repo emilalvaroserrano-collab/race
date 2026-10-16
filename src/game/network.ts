@@ -8,6 +8,8 @@ export class Network {
   phone: string | null = null;
   private betsChannel: ReturnType<typeof supabase.channel> | null = null;
   public onChange: () => void = () => {};
+  public onBalanceChange: (bal:number)=>void = () => {};
+  private profileChannel: ReturnType<typeof supabase.channel> | null = null;
 
   async init(): Promise<void> {
     await this.loadCurrentRace();
@@ -51,6 +53,22 @@ export class Network {
 
   async auth(phone: string): Promise<void> {
     this.phone = phone;
+    await this.subscribeBalance(phone);
+  }
+  private async subscribeBalance(phone: string): Promise<void> {
+    if (this.profileChannel) {
+      supabase.removeChannel(this.profileChannel);
+      this.profileChannel = null;
+    }
+    const { data } = await supabase.from('profiles').select('balance').eq('phone', phone).maybeSingle();
+    if (data) this.onBalanceChange(Number(data.balance));
+    this.profileChannel = supabase
+      .channel(`profile_${phone}`)
+      .on('postgres_changes', { event:'*', schema:'public', table:'profiles', filter:`phone=eq.${phone}` }, (payload:any) => {
+        const bal = (payload.new?.balance ?? payload.old?.balance);
+        if (bal !== undefined && bal !== null) this.onBalanceChange(Number(bal));
+      })
+      .subscribe();
   }
 
   async placeBet(kind: BetKind, a: number, b: number, amount: number): Promise<void> {

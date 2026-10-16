@@ -83,6 +83,11 @@ export class MenuScreen implements Screen {
     const play = {
       x: 586, y: 692, w: 107, h: 108,
       onTap: () => {
+        if ((g.state.money ?? 0) < 10) {
+          g.sound.click();
+          alert("Your balance is below ₱10. Contact admin to load your balance.");
+          return;
+        }
         g.sound.click();
         g.state.newRace();
         g.show(new BetScreen(g));
