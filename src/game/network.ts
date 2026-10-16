@@ -1,8 +1,4 @@
 import { supabase, RaceRow, BetRow } from "./supabase";
-import type {
-  BetKind,
-  BetCell,
-} from "./constants";
 
 export class SupabaseSync {
   race: RaceRow | null = null;
@@ -233,5 +229,3 @@ export class SupabaseSync {
 
 // kept for legacy type compat
 export const BetKindCompat = "win";
-EOF
-echo written
