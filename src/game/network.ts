@@ -1,6 +1,8 @@
-import { supabase, RaceRow, BetRow } from "./supabase";
+import { supabase } from "./supabase";
+import type { RaceRow, BetRow } from "./supabase";
+import type { BetKind } from "./constants";
 
-export class SupabaseSync {
+export class Network {
   race: RaceRow | null = null;
   bets: BetRow[] = [];
   phone: string | null = null;

@@ -40,7 +40,7 @@ export class Game {
     this.sound.muted = true;
     this.orientDiv = document.querySelector(".orientation-msg-container");
     this.net = new Network();
-    this.net.connect();
+    (async () => { try { await this.net.init(); } catch (e) { console.error('net init', e); } })();
 
     window.addEventListener("resize", () => this.resize());
     window.addEventListener("orientationchange", () => this.resize());

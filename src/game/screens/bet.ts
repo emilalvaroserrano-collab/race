@@ -48,17 +48,19 @@ export class BetScreen implements Screen {
   private betPage = 0;
 
   constructor(private game: Game) {
-    this.game.net.onState((s) => {
-      this.raceNumber = s.raceNumber;
-      this.phase = s.phase;
-      this.countdown = s.countdown;
-      this.poolTotal = s.poolTotal;
-      this.horsesWithBets = s.horsesWithBets;
-      this.myBets = s.bets.filter((b) => b.phone === this.game.net.phone);
-      if (s.phase === "racing") {
+    this.game.net.onChange = () => {
+      const net = this.game.net;
+      this.raceNumber = net.race?.race_number ?? 0;
+      this.phase = net.race?.phase ?? "betting";
+      this.countdown = net.secondsLeft();
+      this.poolTotal = net.poolTotal();
+      this.horsesWithBets = net.horsesWithBets();
+      this.myBets = net.myBets();
+      if (net.isRacing()) {
         this.game.show(new RaceScreen(this.game));
       }
-    });
+    };
+    this.game.net.onChange();
   }
 
   enter(): void {
