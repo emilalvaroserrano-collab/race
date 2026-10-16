@@ -48,25 +48,11 @@ export class BetScreen implements Screen {
   private betPage = 0;
 
   constructor(private game: Game) {
-    this.game.net.onChange = () => {
-      const net = this.game.net;
-      this.raceNumber = net.race?.race_number ?? 0;
-      this.phase = net.race?.phase ?? "betting";
-      this.countdown = net.secondsLeft();
-      this.poolTotal = net.poolTotal();
-      this.horsesWithBets = net.horsesWithBets();
-      this.myBets = net.myBets();
-      if (net.isRacing()) {
-        console.log('BETSCREEN onChange: try show RaceScreen', net.race?.phase);
-        try {
-          this.game.show(new RaceScreen(this.game));
-          console.log('BETSCREEN onChange: showed', this.game.screen ? this.game.screen.constructor.name : 'null');
-        } catch (e) {
-          console.error('show RaceScreen failed', e);
-        }
-      }
-    };
-    this.game.net.onChange();
+    // Neutralize any global onChange registration from prior screens.
+    this.game.net.onChange = () => {};
+    void this.game.net.loadCurrentRace().then(() => {
+      this.raceNumber = this.game.net.race?.race_number ?? this.raceNumber;
+    });
   }
 
   enter(): void {
@@ -79,8 +65,19 @@ export class BetScreen implements Screen {
     this.game.sound.soundtrack(false);
     this.game.sound.stopAnnouncer();
   }
-  update(): void { this.game.net.tick(); }
-
+  update(): void {
+    this.game.net.tick();
+    // refresh cached view fields from server state
+    this.raceNumber = this.game.net.race?.race_number ?? this.raceNumber;
+    this.phase = this.game.net.race?.phase ?? this.phase;
+    this.countdown = this.game.net.secondsLeft();
+    this.poolTotal = this.game.net.poolTotal();
+    this.horsesWithBets = this.game.net.horsesWithBets();
+    this.myBets = this.game.net.myBets();
+    if (this.game.net.isRacing()) {
+      this.game.show(new RaceScreen(this.game));
+    }
+  }
   private backedCount(): number {
     return this.horsesWithBets.length;
   }

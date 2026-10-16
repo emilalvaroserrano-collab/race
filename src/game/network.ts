@@ -123,7 +123,7 @@ export class Network {
       this.race.countdown_start_ms !== null
     ) {
       const elapsed = Date.now() - this.race.countdown_start_ms;
-      if (elapsed >= 60_000) {
+      if (elapsed >= 3_000) {
         // try to mark racing
         void this.markRacing();
       }

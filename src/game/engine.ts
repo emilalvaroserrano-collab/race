@@ -122,8 +122,10 @@ export class Game {
     };
   }
 
+  private showCount = 0;
   show(s: Screen): void {
-    console.log('Game.show ->', s.constructor.name, 'from', this.screen?.constructor?.name, 'stack:', new Error().stack?.split('\\n').slice(2,6).join(' | '));
+    this.showCount++;
+    console.log('Game.show #' + this.showCount, '->', s.constructor.name, 'from', this.screen?.constructor?.name);
     this.screen?.exit();
     this.buttons.clear();
     this.screen = s;
