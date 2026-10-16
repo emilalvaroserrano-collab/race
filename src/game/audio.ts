@@ -37,17 +37,26 @@ export class Sound {
     this.play("chip.mp3");
   }
 
-  /** Gate burst: plays once at the start, never loops. Safe to call every tap. */
+  /**
+   * Race bed: gate burst + crowd + hoofbeats. On first play the full file
+   * (including the starting-gate explosion) runs once. On loop restart it
+   * seeks past the gate burst so only the hoofbeat/crowd bed repeats — the
+   * explosion never re-fires mid-race.
+   */
   raceBed(on: boolean, restart = false): void {
     const a = this.el("start_race.mp3");
     if (!a) return;
+    const GATE_BURST_LEN = 2.5;
     try {
-      a.loop = false;
+      a.loop = true;
       a.volume = 0.85;
       a.muted = this.muted || !on;
       if (on && !this.muted) {
-        if (restart || a.currentTime <= 0 || a.ended) {
+        if (restart) {
           a.currentTime = 0;
+          void a.play();
+        } else if (a.ended || a.currentTime >= a.duration - 0.1) {
+          a.currentTime = GATE_BURST_LEN;
           void a.play();
         }
       } else if (!a.paused) {
