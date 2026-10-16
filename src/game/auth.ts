@@ -16,6 +16,8 @@ interface StoreShape {
   house: number;
 }
 
+import { supabase } from "./supabase";
+
 const USERS_KEY = "pm_users_v1";
 const SESSION_KEY = "pm_session_v1";
 
@@ -81,21 +83,28 @@ export const Auth = {
     const s = load();
     if (s.users.length === 0) {
       const now = Date.now();
+      const adminPass = await sha256(ADMIN_PASS);
+      const demoPass = await sha256(DEMO_PASS);
       s.users.push({
         phone: ADMIN_PHONE,
-        pass: await sha256(ADMIN_PASS),
+        pass: adminPass,
         role: "admin",
         balance: 0,
         createdAt: now,
       });
       s.users.push({
         phone: DEMO_PHONE,
-        pass: await sha256(DEMO_PASS),
+        pass: demoPass,
         role: "player",
         balance: DEMO_BALANCE,
         createdAt: now,
       });
       save(s);
+      // Mirror the seed into Supabase so other devices/browsers can log in.
+      void supabase.from("profiles").upsert([
+        { phone: ADMIN_PHONE, pass: adminPass, role: "admin", balance: 0 },
+        { phone: DEMO_PHONE, pass: demoPass, role: "player", balance: DEMO_BALANCE },
+      ], { onConflict: "phone" });
     }
   },
 
@@ -133,6 +142,10 @@ export const Auth = {
     };
     s.users.push(u);
     save(s);
+    void supabase.from("profiles").upsert(
+      { phone: u.phone, pass: u.pass, role: u.role, balance: u.balance },
+      { onConflict: "phone" },
+    );
     return u;
   },
 
@@ -143,6 +156,10 @@ export const Auth = {
     if (!u) throw new Error("Account not found.");
     u.balance = Math.max(0, Math.round((u.balance + delta) * 100) / 100);
     save(s);
+    void supabase.from("profiles").upsert(
+      { phone: u.phone, pass: u.pass, role: u.role, balance: u.balance },
+      { onConflict: "phone" },
+    );
     return u.balance;
   },
 
@@ -152,6 +169,10 @@ export const Auth = {
     if (!u) return;
     u.balance = Math.max(0, Math.round(balance * 100) / 100);
     save(s);
+    void supabase.from("profiles").upsert(
+      { phone: u.phone, pass: u.pass, role: u.role, balance: u.balance },
+      { onConflict: "phone" }
+    );
   },
 
   creditHouse(amount: number): void {

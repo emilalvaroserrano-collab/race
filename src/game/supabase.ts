@@ -23,3 +23,12 @@ export type BetRow = {
   amount: number;
   created_at: string;
 };
+
+export type ProfileRow = {
+  id: string;
+  phone: string;
+  pass: string;
+  role: "admin" | "player";
+  balance: number;
+  created_at: string;
+};

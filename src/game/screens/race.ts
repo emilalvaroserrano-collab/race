@@ -370,9 +370,9 @@ export class RaceScreen implements Screen {
   }
 
   private drawTrack(ctx: CanvasRenderingContext2D): void {
-    const frame = this.game.assets.trackFrame(this.cam * 187);
-    if (frame.complete && frame.naturalWidth > 0) {
-      ctx.drawImage(frame, 0, 0, 1280, 876);
+    const v = this.game.assets.trackVideo;
+    if (v && v.readyState >= 2) {
+      ctx.drawImage(v, 0, 0, 1280, 876);
     }
   }
 

@@ -66,6 +66,7 @@ export class Assets {
   sounds = new Map<SoundName, HTMLAudioElement>();
   loaded = 0;
   total = 0;
+  trackVideo: HTMLVideoElement | null = null;
 
   get progress(): number {
     return this.total === 0 ? 0 : this.loaded / this.total;
@@ -92,14 +93,33 @@ export class Assets {
   async loadAll(): Promise<void> {
     const jobs: Promise<void>[] = [];
     const all = [...IMAGE_FILES.map((f) => SPR + f)];
-    // Prime ALL track frames up front: the race scrubs 0→187 at ~9fps and
-    // on-demand loads caused visible pops/stutter mid-race.
-    for (let i = 0; i < TRACK_FRAMES; i++) all.push(`${SPR}bg_track/bg_track_${i}.jpg`);
-    this.total = all.length + SOUND_FILES.length;
+    // Race track is now a single looping MP4 video (no 188 jpg frames).
+    this.total = all.length + SOUND_FILES.length + 1;
 
     const tick = () => {
       this.loaded++;
+      if (this.loaded >= this.total) {
+        /* loaded */
+      }
     };
+    const v = document.createElement("video");
+    v.src = `${SPR}karera-racetrack.mp4`;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.setAttribute("playsinline", "");
+    v.preload = "auto";
+    v.style.display = "none";
+    document.body.appendChild(v);
+    this.trackVideo = v;
+    const videoDone = () => { tick(); };
+    if (v.readyState >= 3) {
+      videoDone();
+    } else {
+      v.addEventListener("loadeddata", videoDone, { once: true });
+      v.addEventListener("error", videoDone, { once: true });
+    }
+    void v.play().catch(() => { /* autoplay policy */ });
     for (const src of all) {
       jobs.push(
         new Promise<void>((resolve) => {
