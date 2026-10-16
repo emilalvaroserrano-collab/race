@@ -127,7 +127,7 @@ export class BetScreen implements Screen {
       onTap: () => {
         if (this.myBets.length > 0) {
           g.sound.click();
-          g.net.clearBets();
+          void g.net.clearBets();
         }
       },
     };
@@ -210,7 +210,7 @@ export class BetScreen implements Screen {
       x: x - w / 2, y: y - h / 2, w, h,
       onTap: () => {
         const amt = CHIP_VALUES[this.selectedChip];
-        this.game.net.placeBet(kind, a, b, amt);
+        void this.game.net.placeBet(kind, a, b, amt);
         this.game.sound.chip();
       },
     });

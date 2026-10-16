@@ -106,9 +106,8 @@ export class RaceScreen implements Screen {
     this.decideRace();
     // Lock the pool from the server's centralized bets (house take already
     // credited server-side at lock); winners split the rest pro-rata.
-    const net = this.game.net.state;
-    const serverBets = net?.bets ?? [];
-    const total = serverBets.reduce((s, b) => s + b.amount, 0);
+    const serverBets = this.game.net.bets;
+    const total = this.game.net.poolTotal();
     this.poolTotal = total;
     const winBets = serverBets.filter((b) => b.kind === "win");
     const winTotal = winBets.reduce((s, b) => s + b.amount, 0);
@@ -340,8 +339,8 @@ export class RaceScreen implements Screen {
   private computePayout(): number {
     const st = this.game.state;
     const o = this.order;
-    const myBets: BetCell[] = (this.game.net.state?.bets ?? [])
-      .filter((b) => b.phone === this.game.net.phone)
+    const myBets: BetCell[] = this.game.net
+      .myBets()
       .map((b) => ({ kind: b.kind as BetCell["kind"], a: b.a, b: b.b, amount: b.amount }));
     let pay = 0;
     const each = (fn: (b: BetCell) => number) => {
