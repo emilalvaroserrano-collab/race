@@ -26,6 +26,23 @@
         <p class="hint">Admin: admin / admin123 · Demo player: 09123456789 / 1234</p>
       </div>
     </div>
+    <div id="bet-overlay" class="overlay hidden">
+      <div class="card wide betcard">
+        <h1>🐎 KARERA — BETTING</h1>
+        <div class="row">
+          <span>Race <b id="bet-race">1</b></span>
+          <span class="bal">Balance: ₱<b id="bet-bal">0</b></span>
+          <span class="countdown">⏳ <b id="bet-countdown">--</b></span>
+        </div>
+        <div id="bet-grid" class="betgrid"></div>
+        <div class="customrow">
+          <input id="bet-amt" inputmode="decimal" placeholder="Custom amount ₱" />
+          <select id="bet-horse"></select>
+          <button id="bet-confirm" class="ghost">Confirm Bet</button>
+        </div>
+        <div id="bet-msg" class="err"></div>
+      </div>
+    </div>
     <div id="admin-overlay" class="overlay hidden">
       <div class="card wide">
         <h1>🔧 ADMIN · BANGKA</h1>

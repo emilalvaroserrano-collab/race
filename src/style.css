@@ -221,3 +221,34 @@ body {
     font-size: 30px;
   }
 }
+
+
+.betcard.wide { width: min(96vw, 1080px); }
+
+.betgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.bethorse {
+  background: #060f24;
+  border: 1px solid #2b4d86;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.bethorse .name { font-size: 13px; color: #fff; margin: 4px 0; font-weight: bold; }
+.bethorse img { width: 80px; height: 60px; object-fit: contain; }
+.bethorse .quick { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
+.bethorse .quick button { width: auto; margin: 0; padding: 6px 10px; font-size: 12px; border: 1px solid #f2c200; background: #1f3058; color: #ffe14d; border-radius: 6px; cursor: pointer; }
+.bethorse .quick button:hover { background: #f2c200; color: #1a1a1a; }
+.row { display:flex; justify-content: space-between; align-items:center; font-size: 14px; color:#9fd0ff; margin: 6px 0 12px; }
+.row b { color:#ffe14d; }
+.bal { color:#ffe14d; }
+.countdown { color:#ffe14d; }
+.customrow { display:flex; gap:8px; margin-top:12px; align-items:center; }
+.customrow select { flex: 0 0 140px; padding: 8px; border-radius: 8px; border: 1px solid #2b4d86; background: #060f24; color:#ffe14d; }
+.customrow input { flex: 1; }
+.customrow button { width: auto; margin: 0; padding: 12px 16px; }
