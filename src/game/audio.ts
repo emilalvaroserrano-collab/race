@@ -37,17 +37,17 @@ export class Sound {
     this.play("chip.mp3");
   }
 
-  /** Track ambience (crowd + running) bed. Loops; safe to call every tap. */
+  /** Gate burst: plays once at the start, never loops. Safe to call every tap. */
   raceBed(on: boolean, restart = false): void {
     const a = this.el("start_race.mp3");
     if (!a) return;
     try {
-      a.loop = true;
+      a.loop = false;
       a.volume = 0.85;
       a.muted = this.muted || !on;
       if (on && !this.muted) {
-        if (a.paused) {
-          if (restart || a.currentTime <= 0) a.currentTime = 0;
+        if (restart || a.currentTime <= 0 || a.ended) {
+          a.currentTime = 0;
           void a.play();
         }
       } else if (!a.paused) {
