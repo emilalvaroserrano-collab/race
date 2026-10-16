@@ -57,8 +57,13 @@ export class BetScreen implements Screen {
       this.horsesWithBets = net.horsesWithBets();
       this.myBets = net.myBets();
       if (net.isRacing()) {
-        console.log('BETSCREEN onChange: show RaceScreen', net.race?.phase);
-        this.game.show(new RaceScreen(this.game));
+        console.log('BETSCREEN onChange: try show RaceScreen', net.race?.phase);
+        try {
+          this.game.show(new RaceScreen(this.game));
+          console.log('BETSCREEN onChange: showed', this.game.screen ? this.game.screen.constructor.name : 'null');
+        } catch (e) {
+          console.error('show RaceScreen failed', e);
+        }
       }
     };
     this.game.net.onChange();

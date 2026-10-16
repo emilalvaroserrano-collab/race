@@ -218,6 +218,7 @@ export class RaceScreen implements Screen {
     this.game.sound.musicMode = "race";
     this.game.sound.soundtrack(false);
     this.game.sound.raceBed(true, true);
+    this.game.net.onChange = () => {};
   }
   exit(): void {
     // Out of the race: cut the bed; the next screen owns the audio again.
