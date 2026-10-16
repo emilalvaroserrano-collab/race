@@ -123,6 +123,7 @@ export class BetScreen implements Screen {
       confirm.addEventListener("click", () => {
         const val = parseFloat(amt.value || "0");
         const trap = parseInt(horseSel?.value ?? "0", 10);
+        console.log("confirm check", { val, money: this.game.state.money, phone: this.game.state.phone });
         if (val <= 0 || val > this.game.state.money) {
           if (msg) msg.textContent = "Insufficient balance.";
           return;
@@ -139,6 +140,7 @@ export class BetScreen implements Screen {
   private async placeBet(trap: number, amount: number): Promise<void> {
     const g = this.game;
     const msg = el<HTMLElement>("bet-msg");
+    console.log("placeBet check", { amount, money: g.state.money, phone: g.state.phone });
     if (g.state.money < amount) {
       if (msg) msg.textContent = "Not enough balance.";
       return;
