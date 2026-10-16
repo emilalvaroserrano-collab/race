@@ -53,9 +53,17 @@ export class Sound {
       a.muted = this.muted || !on;
       if (on && !this.muted) {
         if (restart) {
+          // one-time: gate burst + continuous hoofbeats/crowd bed
           a.currentTime = 0;
           void a.play();
+        } else if (!a.paused) {
+          // continuous: do nothing while running so the bed steams uninterrupted
         } else if (a.ended || a.currentTime >= a.duration - 0.1) {
+          // loop boundary: skip the gate burst entirely
+          a.currentTime = GATE_BURST_LEN;
+          void a.play();
+        } else if (a.paused && a.currentTime <= 0 && !a.ended) {
+          // catch-all: never re-trigger mid-race from rest
           a.currentTime = GATE_BURST_LEN;
           void a.play();
         }
