@@ -5,6 +5,7 @@ import { Sound } from "./audio";
 import { DESIGN_H, DESIGN_W } from "./constants";
 import { GameState } from "./state";
 import { Buttons } from "./ui";
+import { Network } from "./network";
 
 export interface Screen {
   enter(): void;
@@ -23,6 +24,7 @@ export class Game {
   state = new GameState();
   buttons = new Buttons();
   screen: Screen | null = null;
+  net: Network;
   scale = 1;
   /** True while the canvas is CSS-rotated for portrait (auto-landscape). */
   rotated = false;
@@ -37,6 +39,8 @@ export class Game {
     this.sound = new Sound(this.assets);
     this.sound.muted = true;
     this.orientDiv = document.querySelector(".orientation-msg-container");
+    this.net = new Network();
+    this.net.connect();
 
     window.addEventListener("resize", () => this.resize());
     window.addEventListener("orientationchange", () => this.resize());

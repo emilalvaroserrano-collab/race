@@ -52,6 +52,7 @@ export class LoginScreen implements Screen {
       this.game.state.phone = u.phone;
       this.game.state.loadWallet();
       this.game.state.newRace();
+      this.game.net.auth(u.phone);
       this.game.show(new MenuScreen(this.game));
     } finally {
       if (btn) btn.textContent = "ENTER PADDOCK";

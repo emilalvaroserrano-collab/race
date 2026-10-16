@@ -5,12 +5,13 @@ import {
   FONT_DIGI,
   FONT_IMPACT,
   FONT_MOTOR,
+  HOUSE_TAKE,
   TRAPS,
   WIN_OCCURRENCE,
   fmtMoney,
 } from "../constants";
 import { Game, Screen } from "../engine";
-import { Auth } from "../auth";
+
 import { drawCentered, drawStateHalf, text } from "../ui";
 import { DLG_CX, drawPanelBox, drawDim } from "./dialogs";
 import { HORSE_A_FRAMES, THUMB_FRAME } from "../horseFrames";
@@ -103,12 +104,15 @@ export class RaceScreen implements Screen {
 
   constructor(private game: Game) {
     this.decideRace();
-    // LOCK THE POOL: bets are closed, house takes its cut off the top,
-    // winners split the rest pro-rata.
-    const snap = game.state.pool.lock();
-    this.poolTotal = snap.total;
-    this.div = game.state.pool.dividend(this.order[0]);
-    Auth.creditHouse(snap.take);
+    // Lock the pool from the server's centralized bets (house take already
+    // credited server-side at lock); winners split the rest pro-rata.
+    const net = this.game.net.state;
+    const serverBets = net?.bets ?? [];
+    const total = serverBets.reduce((s, b) => s + b.amount, 0);
+    this.poolTotal = total;
+    const winBets = serverBets.filter((b) => b.kind === "win");
+    const winTotal = winBets.reduce((s, b) => s + b.amount, 0);
+    this.div = winTotal > 0 ? (total * (1 - HOUSE_TAKE)) / winTotal : 0;
   }
 
   // ---------- race setup ----------
@@ -118,7 +122,8 @@ export class RaceScreen implements Screen {
     const n = 8;
     // Winner: 40% a player-backed horse (stake-weighted), else strength-weighted.
     const backed = new Map<number, number>();
-    for (const b of st.bets) {
+    const serverBets = this.game.net.state?.bets ?? [];
+    for (const b of serverBets) {
       if (b.kind === "forecast") {
         backed.set(b.a, (backed.get(b.a) ?? 0) + b.amount * 0.6);
         backed.set(b.b, (backed.get(b.b) ?? 0) + b.amount * 0.4);
@@ -319,10 +324,7 @@ export class RaceScreen implements Screen {
         this.paidOut = true;
         this.payout = this.computePayout();
         this.game.state.money += this.payout;
-        // Settle: stakes are consumed by the locked pool. Clears without a
-        // refund so X/CLEAR after the finish can't pay stakes back twice.
-        this.game.state.bets = [];
-        this.game.state.cellChip.clear();
+        this.game.net.clearBets();
       }
       if (this.arrivalT > 1.4 && this.dialogAt < 0.4) this.dialogAt += dt;
     }
@@ -338,14 +340,15 @@ export class RaceScreen implements Screen {
   private computePayout(): number {
     const st = this.game.state;
     const o = this.order;
+    const myBets: BetCell[] = (this.game.net.state?.bets ?? [])
+      .filter((b) => b.phone === this.game.net.phone)
+      .map((b) => ({ kind: b.kind as BetCell["kind"], a: b.a, b: b.b, amount: b.amount }));
     let pay = 0;
     const each = (fn: (b: BetCell) => number) => {
-      for (const b of st.bets) pay += fn(b);
+      for (const b of myBets) pay += fn(b);
     };
     each((b) => {
       const odds = st.odds;
-      // WIN pays the locked pari-mutuel dividend; other markets stay on
-      // fixed house odds.
       if (b.kind === "win") return b.a === o[0] ? b.amount * this.div : 0;
       if (b.kind === "place") return b.a === o[0] || b.a === o[1] ? b.amount * odds.place[b.a] : 0;
       if (b.kind === "show") return b.a === o[0] || b.a === o[1] || b.a === o[2] ? b.amount * odds.show[b.a] : 0;
@@ -666,9 +669,9 @@ export class RaceScreen implements Screen {
   }
 
   private nextRace(): void {
-    // Broke players stay broke until an admin loads their wallet.
     const g = this.game;
     g.state.newRace();
+    g.net.send({ type: "next_race" });
     g.show(new BetScreen(g));
   }
 
