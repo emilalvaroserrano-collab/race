@@ -123,10 +123,11 @@ export class Game {
   }
 
   show(s: Screen): void {
+    console.log('Game.show ->', s.constructor.name, 'from', this.screen?.constructor?.name);
     this.screen?.exit();
     this.buttons.clear();
     this.screen = s;
-    s.enter();
+    try { s.enter(); } catch(e){ console.error('ENTER ERROR', e); }
   }
 
   fullscreen(on: boolean): void {
