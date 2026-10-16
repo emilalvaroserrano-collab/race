@@ -2,6 +2,7 @@
 // photo finish, arrival panel, result dialog.
 import {
   BetCell,
+  FONT_DIGI,
   FONT_IMPACT,
   FONT_MOTOR,
   TRAPS,
@@ -93,6 +94,10 @@ export class RaceScreen implements Screen {
   private poolTotal = 0;
   /** Final WIN dividend for this race's winner (stake × dividend). */
   private div = 0;
+  /** Broadcast HUD: frozen winning clock + smoothed speed readout. */
+  private winClock = 0;
+  private prevProg = 0;
+  private dispSpeed = 58;
   /** Current badge x per trap; glides toward its rank slot (trap i starts reversed). */
   private trapX: number[] = [...HUD_COL_X].reverse();
 
@@ -270,6 +275,14 @@ export class RaceScreen implements Screen {
     this.frameTick += sdt;
 
     const leader = Math.max(...this.horses.map((h) => h.prog));
+    // Broadcast speed readout: leader pace smoothed (typical gallop reads
+    // high-50s; burst/slow-mo swing it either way).
+    if (!this.finished) {
+      const vel = sdt > 0.0001 ? (leader - this.prevProg) / sdt : 0;
+      const target = Math.max(42, Math.min(78, 52 + vel * 260));
+      this.dispSpeed += (target - this.dispSpeed) * Math.min(1, dt * 3);
+    }
+    this.prevProg = leader;
     // Camera tracks the capped leader (finish line pins at 1) with a tighter
     // time constant than before so the pack doesn't swim around center.
     const leaderCapped = Math.min(1, leader);
@@ -287,6 +300,7 @@ export class RaceScreen implements Screen {
     if (!this.finished && leader >= 1) {
       this.finished = true;
       this.flash = 1;
+      this.winClock = Math.max(0, this.t - GATE_OPEN_T);
       this.game.sound.photo();
       this.slowmo = 0.5;
       this.slowT = 1.1;
@@ -492,6 +506,59 @@ export class RaceScreen implements Screen {
     }
   }
 
+  /** Broadcast HUD: live position chip (top-left), race timer counting up
+   *  and freezing at the winning time (top-center), speed readout (right).
+   *  Mirrors the reference video's overlay. */
+  private drawRaceHUD(ctx: CanvasRenderingContext2D): void {
+    // Position of the player's most-backed horse (winner pick on forecast,
+    // leader when no bets placed).
+    let follow = this.ranking()[0];
+    let best = -1;
+    for (const b of this.game.state.bets) {
+      if (b.amount > best) {
+        best = b.amount;
+        follow = b.a;
+      }
+    }
+    const rank = this.finished && this.arrivalT > 0.1 ? this.order : this.ranking();
+    const place = rank.indexOf(follow);
+    const ord = place === 0 ? "1ST" : place === 1 ? "2ND" : place === 2 ? "3RD" : `${place + 1}TH`;
+
+    ctx.save();
+    // Position chip.
+    ctx.fillStyle = "rgba(4, 12, 30, 0.72)";
+    ctx.strokeStyle = "#2b4d86";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(17, 12, 190, 46, 10);
+    ctx.fill();
+    ctx.stroke();
+    text(ctx, `YOU • ${ord}`, 112, 36, {
+      font: FONT_MOTOR, size: 22, color: "#ffe14d", stroke: "#000000", strokeWidth: 3,
+    });
+    // Timer pill (freezes at the winning clock).
+    const t = this.finished ? this.winClock : Math.max(0, this.t - GATE_OPEN_T);
+    const mm = Math.floor(t / 60);
+    const ss = (t % 60).toFixed(2).padStart(5, "0");
+    ctx.fillStyle = "rgba(4, 12, 30, 0.72)";
+    ctx.strokeStyle = "#2b4d86";
+    ctx.beginPath();
+    ctx.roundRect(544, 12, 192, 46, 10);
+    ctx.fill();
+    ctx.stroke();
+    text(ctx, `${mm}:${ss}`, 640, 36, {
+      font: FONT_DIGI, size: 30, color: "#ffffff",
+    });
+    // Speed readout.
+    text(ctx, String(Math.round(this.dispSpeed)), 1215, 646, {
+      font: FONT_DIGI, size: 36, color: "#ffffff", stroke: "#000000", strokeWidth: 4,
+    });
+    text(ctx, "KM/H", 1215, 674, {
+      font: FONT_MOTOR, size: 14, color: "#9fd0ff", stroke: "#000000", strokeWidth: 3,
+    });
+    ctx.restore();
+  }
+
   private drawCorners(ctx: CanvasRenderingContext2D): void {
     const g = this.game;
     const B = g.buttons;
@@ -613,6 +680,7 @@ export class RaceScreen implements Screen {
     this.drawHorses(ctx);
     this.drawHUD(ctx);
     this.drawCorners(ctx);
+    this.drawRaceHUD(ctx);
     this.drawArrival(ctx);
     if (this.flash > 0) {
       ctx.save();
