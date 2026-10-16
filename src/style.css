@@ -233,17 +233,22 @@ body {
 }
 
 .bethorse {
-  background: #060f24;
-  border: 1px solid #2b4d86;
-  border-radius: 10px;
-  padding: 10px 8px;
+  background: linear-gradient(145deg, rgba(15, 30, 60, .9), rgba(6, 12, 28, .95));
+  border: 1px solid rgba(160, 190, 255, .25);
+  border-radius: 16px;
+  padding: 14px 10px;
   text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+  cursor: pointer;
 }
-.bethorse .name { font-size: 13px; color: #fff; margin: 4px 0; font-weight: bold; }
-.bethorse img { width: 80px; height: 60px; object-fit: contain; }
+.bethorse:hover { transform: translateY(-3px); border-color: rgba(242,194,0,.6); box-shadow: 0 14px 36px rgba(0,0,0,.55), 0 0 0 1px rgba(242,194,0,.3); }
+.bethorse img { width: 92px; height: 70px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,.5)); }
+.bethorse .name { font-size: 14px; color: #fff; margin: 6px 0 8px; font-weight: 700; letter-spacing: .3px; }
 .bethorse .quick { display: flex; gap: 6px; justify-content: center; margin-top: 6px; }
-.bethorse .quick button { width: auto; margin: 0; padding: 6px 10px; font-size: 12px; border: 1px solid #f2c200; background: #1f3058; color: #ffe14d; border-radius: 6px; cursor: pointer; }
-.bethorse .quick button:hover { background: #f2c200; color: #1a1a1a; }
+.bethorse .quick button { width: auto; margin: 0; padding: 7px 12px; font-size: 12.5px; border: 1px solid rgba(242,194,0,.4); background: rgba(31,48,88,.7); color: #ffe14d; border-radius: 8px; cursor: pointer; font-weight: 700; letter-spacing: .3px; transition: all .12s; }
+.bethorse .quick button:hover, .bethorse .quick button:active { background: linear-gradient(180deg,#f2c200,#d4a800); color:#1a1a1a; border-color:#f2c200; transform: scale(.98); }
+.bethorse .backed { margin-top:6px; font-size:10.5px; color:#8fb4ff; letter-spacing:.4px; text-transform:uppercase; }
 .row { display:flex; justify-content: space-between; align-items:center; font-size: 14px; color:#9fd0ff; margin: 6px 0 12px; }
 .row b { color:#ffe14d; }
 .bal { color:#ffe14d; }

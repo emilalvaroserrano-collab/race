@@ -77,11 +77,12 @@ export class BetScreen implements Screen {
       card.className = "bethorse";
       card.dataset.trap = String(i);
       const name = TRAPS[i]?.name ?? `Horse ${i + 1}`;
+      const backed = this.game.net.horsesWithBets().includes(i);
       const thumb = `<img src="/sprites/horse_${i + 1}_a.png" onerror="this.style.display='none'" />`;
       const quickBtns = [10, 20, 50]
         .map((amt) => `<button data-amt="${amt}" data-trap="${i}">${CURRENCY}${amt}</button>`)
         .join("");
-      card.innerHTML = `${thumb}<div class="name">${name}</div><div class="quick">${quickBtns}</div>`;
+      card.innerHTML = `${thumb}<div class="name">${name}</div><div class="quick">${quickBtns}</div><div class="backed">${backed ? "● LIVE" : ""}</div>`;
       grid.appendChild(card);
     }
 
