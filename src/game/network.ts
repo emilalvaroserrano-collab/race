@@ -64,6 +64,7 @@ export class Network {
       b: b < 0 ? -1 : b,
       amount,
     });
+    await this.loadBets();
     // try to start countdown if 2+ distinct horses have bets
     await this.tryStartCountdown();
   }
@@ -139,7 +140,8 @@ export class Network {
       .select();
     if (data && data.length > 0) {
       this.race = { ...this.race, phase: "racing" };
-      this.onChange();
+      try { this.onChange(); } catch (e) { console.error('onChange err', e); }
+      console.log('marked racing')
     } else {
       this.loadCurrentRace().then(() => this.onChange());
     }

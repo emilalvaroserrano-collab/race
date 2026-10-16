@@ -57,6 +57,7 @@ export class BetScreen implements Screen {
       this.horsesWithBets = net.horsesWithBets();
       this.myBets = net.myBets();
       if (net.isRacing()) {
+        console.log('BETSCREEN onChange: show RaceScreen', net.race?.phase);
         this.game.show(new RaceScreen(this.game));
       }
     };
@@ -73,7 +74,7 @@ export class BetScreen implements Screen {
     this.game.sound.soundtrack(false);
     this.game.sound.stopAnnouncer();
   }
-  update(): void {}
+  update(): void { this.game.net.tick(); }
 
   private backedCount(): number {
     return this.horsesWithBets.length;
