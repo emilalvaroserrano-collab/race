@@ -19,7 +19,10 @@ export class Network {
 
   connect(): void {
     const proto = location.protocol === "https:" ? "wss" : "ws";
-    this.ws = new WebSocket(`${proto}://${location.host}`);
+    const host = import.meta.env.DEV
+      ? "localhost:3001"
+      : location.host;
+    this.ws = new WebSocket(`${proto}://${host}`);
 
     this.ws.onmessage = (e) => {
       try {
