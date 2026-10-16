@@ -121,8 +121,7 @@ export class RaceScreen implements Screen {
     const n = 8;
     // Winner: 40% a player-backed horse (stake-weighted), else strength-weighted.
     const backed = new Map<number, number>();
-    const serverBets = this.game.net.state?.bets ?? [];
-    for (const b of serverBets) {
+    for (const b of this.game.net.bets) {
       if (b.kind === "forecast") {
         backed.set(b.a, (backed.get(b.a) ?? 0) + b.amount * 0.6);
         backed.set(b.b, (backed.get(b.b) ?? 0) + b.amount * 0.4);
@@ -670,7 +669,7 @@ export class RaceScreen implements Screen {
   private nextRace(): void {
     const g = this.game;
     g.state.newRace();
-    g.net.send({ type: "next_race" });
+    void g.net.nextRace();
     g.show(new BetScreen(g));
   }
 

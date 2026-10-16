@@ -24,7 +24,7 @@ export class Game {
   state = new GameState();
   buttons = new Buttons();
   screen: Screen | null = null;
-  net: Network;
+  net!: Network;
   scale = 1;
   /** True while the canvas is CSS-rotated for portrait (auto-landscape). */
   rotated = false;

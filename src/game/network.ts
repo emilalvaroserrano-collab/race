@@ -6,7 +6,6 @@ export class Network {
   race: RaceRow | null = null;
   bets: BetRow[] = [];
   phone: string | null = null;
-  private racesChannel: ReturnType<typeof supabase.channel> | null = null;
   private betsChannel: ReturnType<typeof supabase.channel> | null = null;
   public onChange: () => void = () => {};
 
@@ -180,12 +179,12 @@ export class Network {
   }
 
   private subRaces(): void {
-    this.racesChannel = supabase
+    (supabase as any)
       .channel("races_channel")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "races" },
-        (payload) => {
+        (payload: any) => {
           if (payload.eventType === "INSERT") {
             const r = payload.new as RaceRow;
             // new race superseded
