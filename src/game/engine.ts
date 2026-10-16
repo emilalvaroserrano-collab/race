@@ -123,7 +123,7 @@ export class Game {
   }
 
   show(s: Screen): void {
-    console.log('Game.show ->', s.constructor.name, 'from', this.screen?.constructor?.name);
+    console.log('Game.show ->', s.constructor.name, 'from', this.screen?.constructor?.name, 'stack:', new Error().stack?.split('\\n').slice(2,6).join(' | '));
     this.screen?.exit();
     this.buttons.clear();
     this.screen = s;
