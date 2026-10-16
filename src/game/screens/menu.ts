@@ -60,9 +60,8 @@ export class MenuScreen implements Screen {
 
   private toggleAudio(): void {
     this.game.sound.click();
-    this.game.sound.muted = !this.game.sound.muted;
+    this.game.sound.setMuted(!this.game.sound.muted);
     this.game.state.muted = this.game.sound.muted;
-    this.game.sound.soundtrack(!this.game.sound.muted);
   }
 
   render(ctx: CanvasRenderingContext2D): void {

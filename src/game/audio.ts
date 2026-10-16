@@ -85,6 +85,20 @@ export class Sound {
     }
   }
 
+  /** Single entry point for the mute button: silences everything when
+   *  muting, and restarts only what belongs to the current screen when
+   *  unmuting (so unmuting mid-race brings back the crowd bed, never BGM). */
+  setMuted(m: boolean): void {
+    this.muted = m;
+    if (m) {
+      this.soundtrack(false);
+      this.raceBed(false);
+      this.stopAnnouncer();
+    } else {
+      this.resume();
+    }
+  }
+
   /** Re-assert whatever should be audible now (call on user taps). */
   resume(): void {
     if (this.muted) return;
@@ -105,6 +119,19 @@ export class Sound {
         void a.play();
       } catch {
         /* autoplay policy */
+      }
+    }
+  }
+
+  /** Hard guarantee: BGM can never overlap the race bed. Cheap; the race
+   *  screen calls it every frame. */
+  enforceRaceSilence(): void {
+    const a = this.el("soundtrack.mp3");
+    if (a && !a.paused) {
+      try {
+        a.pause();
+      } catch {
+        /* ignore */
       }
     }
   }

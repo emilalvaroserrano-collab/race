@@ -42,7 +42,8 @@ const RIGHT_W = 146;
 
 export class BetScreen implements Screen {
   private warn: string | null = null;
-  /** Betting window: crowd money trickles in, then the pool locks. */
+  /** Betting window: crowd money trickles in, then the pool locks.
+   *  Armed (endsAt > 0) only while 2+ distinct horses carry bets. */
   private endsAt = 0;
   private autoFired = false;
   private trickleAcc = 0;
@@ -54,7 +55,7 @@ export class BetScreen implements Screen {
     this.game.sound.musicMode = "bet";
     this.game.sound.soundtrack(true);
     this.game.sound.announcer();
-    this.endsAt = performance.now() + BET_WINDOW_S * 1000;
+    this.endsAt = 0;
     this.autoFired = false;
     this.trickleAcc = 0;
   }
@@ -71,15 +72,34 @@ export class BetScreen implements Screen {
       this.trickleAcc -= 2.5;
       st.pool.trickle(st.strength);
     }
+    // Arm the 60s auto-lock only once at least two horses have action;
+    // one horse (or none) never auto-starts the race.
+    if (this.backedCount() >= 2) {
+      if (this.endsAt <= 0) this.endsAt = performance.now() + BET_WINDOW_S * 1000;
+    } else {
+      this.endsAt = 0;
+      this.autoFired = false;
+    }
     // Auto-start (lock the pool) when the window closes.
-    if (!this.autoFired && performance.now() >= this.endsAt) {
+    if (!this.autoFired && this.endsAt > 0 && performance.now() >= this.endsAt) {
       this.autoFired = true;
       this.tryStart();
     }
   }
 
-  /** Seconds left before bets lock. */
+  /** Distinct horses carrying player bets (forecast counts both legs). */
+  private backedCount(): number {
+    const s = new Set<number>();
+    for (const b of this.game.state.bets) {
+      s.add(b.a);
+      if (b.kind === "forecast" && b.b >= 0) s.add(b.b);
+    }
+    return s.size;
+  }
+
+  /** Seconds left before bets lock (0 while unarmed). */
   private secondsLeft(): number {
+    if (this.endsAt <= 0) return 0;
     return Math.max(0, (this.endsAt - performance.now()) / 1000);
   }
 
@@ -97,9 +117,8 @@ export class BetScreen implements Screen {
             g.fullscreen(!document.fullscreenElement);
           } else if (kind === "au") {
             g.sound.click();
-            g.sound.muted = !g.sound.muted;
+            g.sound.setMuted(!g.sound.muted);
             g.state.muted = g.sound.muted;
-            g.sound.soundtrack(!g.sound.muted);
           } else {
             g.sound.click();
             g.show(new MenuScreen(g));
@@ -196,10 +215,15 @@ export class BetScreen implements Screen {
       const s = B.isPressed(st2) ? 0.95 : 1;
       drawCentered(ctx, A.img("but_start_race"), RIGHT_X + RIGHT_W / 2, 630.5, RIGHT_W * s, 71 * s);
     }
-    // Betting window countdown (auto-locks the pool) or broke hint.
+    // Betting window status above START: broke hint, waiting-for-action
+    // hint, or the live lock countdown (armed only with 2+ horses backed).
     if (st.money < MIN_BET && st.totalBet < MIN_BET) {
       text(ctx, "NO BALANCE", RIGHT_X + RIGHT_W / 2, 588, {
         font: FONT_DIGI, size: 16, color: "#ff7b7b",
+      });
+    } else if (this.backedCount() < 2) {
+      text(ctx, "BACK 2+ HORSES", RIGHT_X + RIGHT_W / 2, 588, {
+        font: FONT_DIGI, size: 16, color: "#9fd0ff",
       });
     } else {
       const s = Math.ceil(this.secondsLeft());

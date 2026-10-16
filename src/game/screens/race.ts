@@ -221,6 +221,8 @@ export class RaceScreen implements Screen {
     const sdt = dt * this.slowmo;
     this.t += sdt;
     const runT = Math.max(0, this.t - GATE_OPEN_T);
+    // No BGM during the race, ever — crowd bed + hoofbeats only.
+    this.game.sound.enforceRaceSilence();
 
     for (const h of this.horses) {
       h.prog = this.progress(h, runT);
@@ -502,9 +504,8 @@ export class RaceScreen implements Screen {
             g.fullscreen(!document.fullscreenElement);
           } else if (kind === "au") {
             g.sound.click();
-            g.sound.muted = !g.sound.muted;
+            g.sound.setMuted(!g.sound.muted);
             g.state.muted = g.sound.muted;
-            g.sound.soundtrack(!g.sound.muted);
           } else {
             g.sound.click();
             // Forfeit: refund bets, back to bet screen.
